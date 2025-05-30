@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - mynetwork
+    env_file:
+      - .env
+
+  web:
+    image: django-weather-app
+    build:
+      context: ./o_complex_project
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./o_complex_project:/usr/src/app
+    networks:
+      - mynetwork
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      WEATHER_API_KEY: ${WEATHER_API_KEY}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      AI_KEY: ${AI_KEY}
+    env_file:
+      - .env
+volumes:
+  db-data:
+
+networks:
+  mynetwork:

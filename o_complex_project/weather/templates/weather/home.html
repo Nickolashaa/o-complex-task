@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O-COMPLEX-WEATHER</title>
+    <link rel="stylesheet" href="{% static "weather/home.css" %}">
+</head>
+<body>
+    <h1>O-COMPLEX WEATHER</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label class="form-label" for="town">Введите город</label>
+        <input {% if current_town %} placeholder={{ current_town.title }} {% else %} placeholder="Москва" {% endif %}  list="towns" id="town" name="town" />
+        <datalist id="towns">
+            {% for town in towns %}
+                <option value={{ town.title }}>
+            {% endfor %}
+        </datalist>
+        <button type='submit' id="button">Узнать погоду</button>
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+    </form>
+    {% if current_town %}
+        <h6>Последнее время сканирования: {{ current_town.scan_time }}</h6>
+        <div class="result">
+            {{current_town.weather}}
+        </div>
+        <div class="fact">
+            {{current_town.fact}}
+        </div>
+    {% endif %}
+<script>
+    const button = document.getElementById('button');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    button.addEventListener('click', () => {
+        button.style.display = 'none';
+        progressContainer.style.display = 'block';
+
+        let progress = 0;
+        const interval = 100; // 100ms
+        const duration = 5000; // 5000ms = 5s
+        const step = 100 / (duration / interval); // 2% per 100ms
+
+        const timer = setInterval(() => {
+        progress += step;
+        if (progress >= 100) {
+            progress = 100;
+            clearInterval(timer);
+        }
+        progressBar.style.width = progress + '%';
+        }, interval);
+    });
+</script>
+</body>
+</html>
