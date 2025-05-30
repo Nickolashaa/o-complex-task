@@ -1,0 +1,3 @@
+# Обеспечим LF для всех скриптов и кода
+*.sh text eol=lf
+*.py text eol=lf
